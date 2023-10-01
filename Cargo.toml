@@ -1,0 +1,9 @@
+[workspace]
+resolver = "2"
+members = [
+  "leb128fmt",
+]
+
+exclude = [
+  "leb128fmt-tests",
+]
