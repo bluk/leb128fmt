@@ -148,6 +148,8 @@
     unused_qualifications
 )]
 
+use core::fmt;
+
 /// Returns the maximum byte length that is used to encode a value for a given
 /// number of `BITS`.
 ///
@@ -451,6 +453,22 @@ enum InnerError {
 /// Error when decoding a LEB128 value.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Error(InnerError);
+
+impl fmt::Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self.0 {
+            InnerError::NeedMoreBytes => f.write_str("need more bytes"),
+            InnerError::InvalidEncoding => f.write_str("invalid encoding"),
+        }
+    }
+}
+
+#[cfg(feature = "std")]
+impl std::error::Error for Error {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        None
+    }
+}
 
 impl Error {
     /// If more bytes are needed in the slice to decode the value
