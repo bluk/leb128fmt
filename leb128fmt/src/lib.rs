@@ -222,7 +222,7 @@ macro_rules! encode_uint_arr {
             usize,
         )> {
             const BITS: u32 = $bits;
-            if <$num_ty>::BITS > BITS && value >> BITS - 1 > 1 {
+            if <$num_ty>::BITS > BITS && 1 < value >> BITS - 1 {
                 return None;
             }
 
@@ -285,7 +285,7 @@ macro_rules! encode_fixed_uint_arr {
             value: $num_ty,
         ) -> Option<[u8; (($bits / 7) + if $bits % 7 == 0 { 0 } else { 1 }) as usize]> {
             const BITS: u32 = $bits;
-            if <$num_ty>::BITS > BITS && value >> BITS - 1 > 1 {
+            if <$num_ty>::BITS > BITS && 1 < value >> BITS - 1 {
                 return None;
             }
 
@@ -351,7 +351,7 @@ macro_rules! decode_uint_arr {
             input: [u8; (($bits / 7) + if $bits % 7 == 0 { 0 } else { 1 }) as usize],
         ) -> Option<($num_ty, usize)> {
             const BITS: u32 = $bits;
-            if BITS > <$num_ty>::BITS {
+            if <$num_ty>::BITS < BITS {
                 return None;
             }
 
@@ -382,7 +382,7 @@ macro_rules! decode_uint_arr {
                 // Another stricter condition is if the last byte has a 0 value.
                 // The encoding is correct but not the minimal number of bytes
                 // was used to express the final value.
-                if shift == BITS - (BITS % 7) && n >= 1 << (BITS % 7) {
+                if shift == BITS - (BITS % 7) && 1 << (BITS % 7) <= n {
                     return None;
                 }
 
@@ -547,13 +547,13 @@ where
     <T as core::ops::Shr<u32>>::Output: PartialEq<T>,
     u8: TryFrom<<T as core::ops::BitAnd<T>>::Output>,
 {
-    if T::BITS > BITS && value >> BITS != T::from(0) {
+    if BITS < T::BITS && value >> BITS != T::from(0) {
         return None;
     }
 
     let mut index = *pos;
     loop {
-        if index >= output.len() {
+        if output.len() <= index {
             return None;
         }
 
@@ -627,7 +627,7 @@ where
     <T as core::ops::Shr<u32>>::Output: PartialEq<T>,
     u8: TryFrom<<T as core::ops::BitAnd>::Output>,
 {
-    if T::BITS > BITS && value >> BITS != T::from(0) {
+    if BITS < T::BITS && value >> BITS != T::from(0) {
         return None;
     }
 
@@ -686,7 +686,7 @@ where
     T: core::ops::Shl<u32, Output = T> + core::ops::BitOrAssign + From<u8> + UInt,
 {
     assert!(BITS <= T::BITS);
-    if *pos >= input.len() {
+    if input.len() <= *pos {
         return Err(Error(InnerError::NeedMoreBytes));
     }
 
@@ -701,7 +701,7 @@ where
 
     let mut idx = *pos + 1;
     loop {
-        if idx >= input.len() {
+        if input.len() <= idx {
             return Err(Error(InnerError::NeedMoreBytes));
         }
 
@@ -723,7 +723,7 @@ where
         // Another stricter condition is if the last byte has a 0 value.
         // The encoding is correct but not the minimal number of bytes
         // was used to express the final value.
-        if shift == BITS - (BITS % 7) && n >= 1 << (BITS % 7) {
+        if shift == BITS - (BITS % 7) && 1 << (BITS % 7) <= n {
             return Err(Error(InnerError::InvalidEncoding));
         }
 
@@ -774,7 +774,7 @@ macro_rules! encode_sint_arr {
             usize,
         )> {
             const BITS: u32 = $bits;
-            if <$num_ty>::BITS > BITS {
+            if BITS < <$num_ty>::BITS {
                 let v: $num_ty = value >> BITS - 1;
                 if v != 0 && v != -1 {
                     return None;
@@ -836,7 +836,7 @@ macro_rules! encode_fixed_sint_arr {
             mut value: $num_ty,
         ) -> Option<[u8; (($bits / 7) + if $bits % 7 == 0 { 0 } else { 1 }) as usize]> {
             const BITS: u32 = $bits;
-            if <$num_ty>::BITS > BITS {
+            if BITS < <$num_ty>::BITS {
                 let v = value >> BITS - 1;
                 if v != 0 && v != -1 {
                     return None;
@@ -928,7 +928,7 @@ macro_rules! decode_sint_arr {
             input: [u8; (($bits / 7) + if $bits % 7 == 0 { 0 } else { 1 }) as usize],
         ) -> Option<($num_ty, usize)> {
             const BITS: u32 = $bits;
-            if BITS > <$num_ty>::BITS {
+            if <$num_ty>::BITS < BITS {
                 return None;
             }
 
@@ -1127,7 +1127,7 @@ where
     <T as core::ops::Shr<u32>>::Output: PartialEq<T>,
     u8: TryFrom<<T as core::ops::BitAnd<T>>::Output>,
 {
-    if T::BITS > BITS {
+    if BITS < T::BITS {
         let v = value >> BITS;
         if v != T::from(0) && v != T::from(-1) {
             return None;
@@ -1136,7 +1136,7 @@ where
 
     let mut index = *pos;
     loop {
-        if index >= output.len() {
+        if output.len() <= index {
             return None;
         }
 
@@ -1212,7 +1212,7 @@ where
     <T as core::ops::Shr<u32>>::Output: PartialEq<T>,
     u8: TryFrom<<T as core::ops::BitAnd>::Output>,
 {
-    if T::BITS > BITS {
+    if BITS < T::BITS {
         let v = value >> BITS;
         if v != T::from(0) && v != T::from(-1) {
             return None;
@@ -1294,7 +1294,7 @@ where
 
     let mut idx = *pos;
     loop {
-        if idx >= input.len() {
+        if input.len() <= idx {
             return Err(Error(InnerError::NeedMoreBytes));
         }
 
