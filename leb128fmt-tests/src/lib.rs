@@ -64,5 +64,77 @@ mod tests {
                 return Ok(());
             }
         }
+
+        #[allow(clippy::ignored_unit_patterns)]
+        #[test]
+        fn test_encode_decode_s32_num(n in any::<i32>()) {
+            let (bytes, written_len) = encode_s32(n).unwrap();
+            let (decoded_n, read_len) = decode_s32(bytes).unwrap();
+            prop_assert_eq!(decoded_n, n);
+            prop_assert_eq!(written_len, read_len);
+        }
+
+        #[allow(clippy::ignored_unit_patterns)]
+        #[test]
+        fn test_encode_fixed_decode_s32_num(n in any::<i32>()) {
+            let bytes = encode_fixed_s32(n).unwrap();
+            let (decoded_n, read_len) = decode_s32(bytes).unwrap();
+            prop_assert_eq!(decoded_n, n);
+            prop_assert_eq!(bytes.len(), read_len);
+        }
+
+        #[allow(clippy::ignored_unit_patterns)]
+        #[test]
+        fn test_encode_decode_s64_num(n in any::<i64>()) {
+            let (bytes, written_len) = encode_s64(n).unwrap();
+            let (decoded_n, read_len) = decode_s64(bytes).unwrap();
+            prop_assert_eq!(decoded_n, n);
+            prop_assert_eq!(written_len, read_len);
+        }
+
+        #[allow(clippy::ignored_unit_patterns)]
+        #[test]
+        fn test_encode_fixed_decode_s64_num(n in any::<i64>()) {
+            let bytes = encode_fixed_s64(n).unwrap();
+            let (decoded_n, read_len) = decode_s64(bytes).unwrap();
+            prop_assert_eq!(decoded_n, n);
+            prop_assert_eq!(bytes.len(), read_len);
+        }
+
+        #[allow(clippy::ignored_unit_patterns)]
+        #[test]
+        fn test_decode_encode_s32_bytes(bytes in prop::array::uniform5(any::<u8>())) {
+            if decode_s32(bytes).is_none() {
+                for b in bytes.iter().take(4) {
+                    prop_assert!(b & 0x80 != 0);
+                }
+
+                if bytes[4] & 0x80  == 0 {
+                    if bytes[4] & 0x40 != 0 {
+                        prop_assert!(bytes[4] < 0x78);
+                    } else {
+                        prop_assert!(bytes[4] > 0x07);
+                    }
+                }
+            };
+        }
+
+        #[allow(clippy::ignored_unit_patterns)]
+        #[test]
+        fn test_decode_encode_s64_bytes(bytes in prop::array::uniform10(any::<u8>())) {
+            if decode_s64(bytes).is_none() {
+                for b in bytes.iter().take(9) {
+                    prop_assert!(b & 0x80 != 0);
+                }
+
+                if bytes[9] & 0x80  == 0 {
+                    if bytes[9] & 0x40 != 0 {
+                        prop_assert_ne!(bytes[9], 0x7F);
+                    } else {
+                        prop_assert_ne!(bytes[9], 0x00);
+                    }
+                }
+            };
+        }
     }
 }
