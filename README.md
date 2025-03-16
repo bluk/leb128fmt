@@ -133,7 +133,7 @@ value is also written out using the fixed maximum number of bytes.
 
 ```rust
 // Encode an unsigned 32 bit number with all 5 bytes:
-let output  = leb128fmt::encode_fixed_u32(43110).unwrap();
+let output = leb128fmt::encode_fixed_u32(43110).unwrap();
 assert_eq!(output, [0xE6, 0xD0, 0x82, 0x80, 0x00]);
 
 // Decode an unsigned 32 bit number:

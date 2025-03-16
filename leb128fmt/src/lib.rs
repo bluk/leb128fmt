@@ -123,7 +123,7 @@
 //!
 //! ```rust
 //! // Encode an unsigned 32 bit number with all 5 bytes:
-//! let output  = leb128fmt::encode_fixed_u32(43110).unwrap();
+//! let output = leb128fmt::encode_fixed_u32(43110).unwrap();
 //! assert_eq!(output, [0xE6, 0xD0, 0x82, 0x80, 0x00]);
 //!
 //! // Decode an unsigned 32 bit number:
@@ -914,7 +914,7 @@ encode_fixed_sint_arr!(encode_fixed_s64, i64, 64);
 #[macro_export]
 macro_rules! decode_sint_arr {
     ($func:ident, $num_ty:ty, $bits:literal) => {
-        /// Decodes an unsigned LEB128 number.
+        /// Decodes a signed LEB128 number.
         ///
         /// If there is a valid encoded value, returns the decoded value and the
         /// index after the last byte read.
@@ -1263,7 +1263,7 @@ where
     }
 }
 
-/// Decodes an unsigned integer from a slice of bytes and starting at a given position.
+/// Decodes a signed integer from a slice of bytes and starting at a given position.
 ///
 /// # Errors
 ///
